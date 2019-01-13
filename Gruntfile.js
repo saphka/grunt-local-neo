@@ -5,7 +5,7 @@ module.exports = function (grunt) {
         localneo: {
             default: {
                 options: {
-                    basepath: '.'
+                    basePath: '.'
                 }
             }
         }

@@ -23,7 +23,8 @@
   },
   "dependencies": {
     "grunt-connect-proxy-updated": "^0.2.1",
-    "grunt-contrib-connect": "^1.0.2"
+    "grunt-contrib-connect": "^1.0.2",
+    "dotenv": "^6.2.0"
   },
   "devDependencies": {
     "grunt": "^1.0.3"
