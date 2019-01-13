@@ -1,6 +1,6 @@
 {
   "name": "grunt-local-neo",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "homepage": "https://github.com/saphka/grunt-local-neo",
   "author": {
     "name": "saphka"
@@ -21,6 +21,13 @@
   "engines": {
     "node": ">= 0.8.0"
   },
+  "keywords": [
+    "neo",
+    "sap",
+    "local",
+    "sapui5",
+    "openui5"
+  ],
   "dependencies": {
     "grunt-connect-proxy-updated": "^0.2.1",
     "grunt-contrib-connect": "^1.0.2",
