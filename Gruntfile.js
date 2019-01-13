@@ -3,10 +3,8 @@ module.exports = function (grunt) {
 
     grunt.initConfig({
         localneo: {
-            default: {
-                options: {
-                    basePath: '.'
-                }
+            options: {
+                basePath: '.'
             }
         }
     });

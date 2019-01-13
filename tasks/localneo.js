@@ -38,7 +38,7 @@ module.exports = function (grunt) {
                     rewrite: {}
                 };
 
-                proxy.rewrite[route.path] = (options.sapui5 ? "/" + options.sapui5 : "") + route.target.entryPath;
+                proxy.rewrite[route.path] = (options.sapUi5 ? "/" + options.sapUi5 : "") + route.target.entryPath;
 
                 return proxy;
             default:
@@ -75,7 +75,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-connect-proxy-updated");
     grunt.loadNpmTasks("grunt-contrib-connect");
 
-    grunt.registerMultiTask("localneo", "Local NEO runtime", function () {
+    grunt.registerTask("localneo", "Local NEO runtime", function () {
 
         let options = this.options({
             port: 62493,
@@ -101,7 +101,7 @@ module.exports = function (grunt) {
                     keepalive: true,
                     open: options.open,
                     base: [{
-                        path: options.basepath,
+                        path: options.basePath,
                         options: {
                             index: options.index
                         }
@@ -115,7 +115,7 @@ module.exports = function (grunt) {
             }
         });
 
-        grunt.task.run(["configureProxies:server", "connect:server" ]);
+        grunt.task.run(["configureProxies:server", "connect:server"]);
 
     });
 
