@@ -1,0 +1,31 @@
+{
+  "name": "grunt-local-neo",
+  "version": "1.0.0",
+  "homepage": "https://github.com/saphka/grunt-local-neo",
+  "author": {
+    "name": "saphka"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/saphka/grunt-local-neo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/saphka/grunt-local-neo/issues"
+  },
+  "licenses": [
+    {
+      "type": "GNU",
+      "url": "https://github.com/saphka/grunt-local-neo/blob/master/LICENSE"
+    }
+  ],
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "dependencies": {
+    "grunt-connect-proxy-updated": "^0.2.1",
+    "grunt-contrib-connect": "^1.0.2"
+  },
+  "devDependencies": {
+    "grunt": "^1.0.3"
+  }
+}
