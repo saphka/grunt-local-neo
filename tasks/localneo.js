@@ -52,6 +52,7 @@ module.exports = function (grunt) {
             password = process.env["DEST_" + route.target.name + "_PASSWORD"];
 
         if (!host) {
+            grunt.log.error("No host specified for destination '" + route.target.name + "'. Skipping");
             return null;
         }
 
@@ -84,6 +85,17 @@ module.exports = function (grunt) {
             index: "",
             sapUi5: "",
         });
+
+        grunt.verbose.writeln("Running on port: " + options.port);
+        grunt.verbose.writeln("Serving from '" + options.basePath + "'")
+        if (options.open) {
+            grunt.verbose.writeln("Index file '" + options.index + "' will be opened");
+        }
+        if (options.sapUi5) {
+            grunt.verbose.writeln("SAPUI5 version: " + options.sapUi5);
+        } else {
+            grunt.log.writeln("SAPUI5 version not specified. Latest will be used");
+        }
 
         let proxies = [];
         let neoapp = grunt.file.readJSON("neo-app.json");
