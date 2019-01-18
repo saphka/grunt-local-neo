@@ -3,20 +3,6 @@ module.exports = function (grunt) {
 
     require("dotenv").config();
 
-    function rewriteSetCookie(req, res, next) {
-        let oldWriteHead = res.writeHead;
-        res.writeHead = function () {
-            let cookie = res.getHeader("Set-Cookie");
-            if (cookie) {
-                res.setHeader("Set-Cookie", cookie.map(function (item) {
-                    return item.replace(/Domain=.*;/g, "");
-                }));
-            }
-            oldWriteHead.apply(res, arguments);
-        };
-        next();
-    }
-
     function mapRouteToProxy(route, options) {
         switch (route.target.type) {
             case "service":
@@ -84,6 +70,7 @@ module.exports = function (grunt) {
             basePath: "./webapp",
             index: "",
             sapUi5: "",
+            secure: false
         });
 
         grunt.verbose.writeln("Running on port: " + options.port);
@@ -104,12 +91,32 @@ module.exports = function (grunt) {
             proxies = neoapp.routes.map(route => mapRouteToProxy(route, options)).filter(route => !!route);
         }
 
+        function rewriteSetCookie(req, res, next) {
+            let oldWriteHead = res.writeHead;
+            res.writeHead = function () {
+                let cookie = res.getHeader("Set-Cookie");
+                if (cookie) {
+                    res.setHeader("Set-Cookie", cookie.map(function (item) {
+                        let result = item.replace(/Domain=.*;/g, "");
+
+                        if (!options.secure) {
+                            result = result.replace(/Secure;/g, "")
+                        }
+
+                        return result;
+                    }));
+                }
+                oldWriteHead.apply(res, arguments);
+            };
+            next();
+        }
+
         grunt.config("connect", {
             server: {
                 options: {
                     port: options.port,
                     hostname: "localhost",
-                    protocol: "https",
+                    protocol: options.secure ? "https" : "http",
                     keepalive: true,
                     open: options.open,
                     base: [{
