@@ -103,6 +103,8 @@ module.exports = function (grunt) {
                             result = result.replace(/Secure;/g, "")
                         }
 
+                        grunt.verbose.writeln("Rewrote cookies. Was: " + item + ". Now: " + result);
+
                         return result;
                     }));
                 }
