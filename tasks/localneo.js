@@ -129,6 +129,7 @@ module.exports = function (grunt) {
                             index: options.index
                         }
                     }].concat(options.localResources),
+                    directory: options.basePath,
                     middleware: function (connect, options, middleware) {
                         return [
                             rewriteSetCookie, require("grunt-connect-proxy-updated/lib/utils").proxyRequest].concat(middleware);
