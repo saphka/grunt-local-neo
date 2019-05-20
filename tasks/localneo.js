@@ -71,7 +71,8 @@ module.exports = function (grunt) {
             index: "",
             sapUi5: "",
             secure: false,
-            proxies: []
+            proxies: [],
+            localResources: []
         });
 
         grunt.verbose.writeln("Running on port: " + options.port);
@@ -127,7 +128,7 @@ module.exports = function (grunt) {
                         options: {
                             index: options.index
                         }
-                    }],
+                    }].concat(options.localResources),
                     middleware: function (connect, options, middleware) {
                         return [
                             rewriteSetCookie, require("grunt-connect-proxy-updated/lib/utils").proxyRequest].concat(middleware);
