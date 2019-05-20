@@ -70,7 +70,8 @@ module.exports = function (grunt) {
             basePath: "./webapp",
             index: "",
             sapUi5: "",
-            secure: false
+            secure: false,
+            proxies: []
         });
 
         grunt.verbose.writeln("Running on port: " + options.port);
@@ -84,11 +85,11 @@ module.exports = function (grunt) {
             grunt.log.writeln("SAPUI5 version not specified. Latest will be used");
         }
 
-        let proxies = [];
+        let proxies = options.proxies.slice();
         let neoapp = grunt.file.readJSON("neo-app.json");
 
         if (Array.isArray(neoapp.routes)) {
-            proxies = neoapp.routes.map(route => mapRouteToProxy(route, options)).filter(route => !!route);
+            proxies = proxies.concat(neoapp.routes.map(route => mapRouteToProxy(route, options)).filter(route => !!route));
         }
 
         function rewriteSetCookie(req, res, next) {
