@@ -9,6 +9,17 @@ module.exports = function (grunt) {
                 return mapServiceToProxy(route, options);
             case "destination":
                 return mapDestinationToProxy(route, options);
+            case "application":
+                return mapApplicationToProxy(route, options);
+            default:
+                return null;
+        }
+    }
+
+    function mapRouteToPath(route, options) {
+        switch (route.target.type) {
+            case "application":
+                return mapApplicationToPath(route, options);
             default:
                 return null;
         }
@@ -59,6 +70,38 @@ module.exports = function (grunt) {
         return proxy;
     }
 
+    function mapApplicationToProxy(route, options) {
+        let path = process.env["DEST_" + route.target.name + "_PATH"];
+
+        if (!path) {
+            grunt.log.error("No path specified for application '" + route.target.name + "'. Skipping");
+            return null;
+        }
+
+        let proxy = {
+            context: route.path,
+            host: "localhost",
+            https: false,
+            headers: {},
+            rewrite: {}
+        };
+
+        proxy.rewrite[route.path] = route.target.entryPath ? route.target.entryPath : "";
+
+        return proxy;
+    }
+
+    function mapApplicationToPath(route, options) {
+        let path = process.env["DEST_" + route.target.name + "_PATH"];
+
+        if (!path) {
+            grunt.log.error("No path specified for application '" + route.target.name + "'. Skipping");
+            return null;
+        }
+
+        return path;
+    }
+
     grunt.loadNpmTasks("grunt-connect-proxy-updated");
     grunt.loadNpmTasks("grunt-contrib-connect");
 
@@ -87,10 +130,13 @@ module.exports = function (grunt) {
         }
 
         let proxies = options.proxies.slice();
+        let localResources = options.localResources.slice();
         let neoapp = grunt.file.readJSON("neo-app.json");
 
         if (Array.isArray(neoapp.routes)) {
             proxies = proxies.concat(neoapp.routes.map(route => mapRouteToProxy(route, options)).filter(route => !!route));
+
+            localResources = localResources.concat(neoapp.routes.map(route => mapRouteToPath(route, options)).filter(route => !!route));
         }
 
         function rewriteSetCookie(req, res, next) {
@@ -128,11 +174,13 @@ module.exports = function (grunt) {
                         options: {
                             index: options.index
                         }
-                    }].concat(options.localResources),
+                    }].concat(localResources),
                     directory: options.basePath,
                     middleware: function (connect, options, middleware) {
                         return [
-                            rewriteSetCookie, require("grunt-connect-proxy-updated/lib/utils").proxyRequest].concat(middleware);
+                            rewriteSetCookie,
+                            require("grunt-connect-proxy-updated/lib/utils").proxyRequest
+                        ].concat(middleware);
                     }
                 },
                 proxies: proxies
