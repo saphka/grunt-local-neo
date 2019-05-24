@@ -81,6 +81,7 @@ module.exports = function (grunt) {
         let proxy = {
             context: route.path,
             host: "localhost",
+            port: options.port,
             https: false,
             headers: {},
             rewrite: {}
