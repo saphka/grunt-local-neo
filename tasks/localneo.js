@@ -86,7 +86,7 @@ module.exports = function (grunt) {
             rewrite: {}
         };
 
-        proxy.rewrite[route.path] = path + (route.target.entryPath ? route.target.entryPath : "");
+        proxy.rewrite[route.path] = route.target.entryPath ? route.target.entryPath : "";
 
         return proxy;
     }
