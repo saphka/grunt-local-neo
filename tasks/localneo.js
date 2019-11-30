@@ -37,6 +37,8 @@ module.exports = function (grunt) {
                     context: route.path,
                     host: 'sapui5.hana.ondemand.com',
                     https: true,
+                    xforward: true,
+                    secure: true,
                     rewrite: {}
                 };
 
@@ -97,6 +99,7 @@ module.exports = function (grunt) {
             host: host ? host : 'localhost',
             port: host ? undefined : options.port,
             https: host ? true : options.secure,
+            xforward: true,
             secure: !!host,
             headers: {},
             rewrite: {}
