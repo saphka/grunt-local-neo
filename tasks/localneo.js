@@ -229,6 +229,8 @@ module.exports = function (grunt) {
             localResources = localResources.concat(neoApp.routes.map(route => mapRouteToPath(route, options)).filter(route => !!route));
         }
 
+        let sapui5ComponentId = options.component;
+
         grunt.config('connect', {
             server: {
                 options: {
@@ -253,7 +255,7 @@ module.exports = function (grunt) {
                                 serverIndex(serverContentsRoot, {
                                     template: path.join(__dirname, '../public', 'directory.html')
                                 }),
-                                serveSandbox(options.component)
+                                serveSandbox(sapui5ComponentId)
                             ])
 
                     }
