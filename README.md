@@ -16,19 +16,16 @@ Once the plugin has been installed, it may be enabled inside your Gruntfile with
 grunt.loadNpmTasks('grunt-local-neo');
 ```
 
-
 ## The "localneo" task
 
 ### Overview
-In your project's Gruntfile, add a section named `localneo` to the data object passed into `grunt.initConfig()`.
+In your project's Gruntfile, add configuration named `localneo` to Grunt configuration with `grunt.config()`.
 
 ```js
-grunt.initConfig({
-    localneo: {
-        options: {
-            // Task-specific options go here.
-        }
-    }
+grunt.config("localneo", {
+	options: {
+		// see next chapter
+	}
 });
 ```
 
@@ -116,11 +113,10 @@ DEST_<Destination name>_PASSWORD=<Password>
 
 #### Default set up
 ```js
-grunt.initConfig({
-    localneo: {
-        options: {
-        }
-    }
+grunt.config("localneo", {
+	options: {
+		component: "<your component id here>"
+	}
 });
 ```
 
