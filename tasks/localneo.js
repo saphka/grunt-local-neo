@@ -1,15 +1,17 @@
 module.exports = function (grunt) {
-    "use strict";
+    'use strict';
 
-    require("dotenv").config();
+    require('dotenv').config();
+
+    const path = require('path');
 
     function mapRouteToProxy(route, options) {
         switch (route.target.type) {
-            case "service":
+            case 'service':
                 return mapServiceToProxy(route, options);
-            case "destination":
+            case 'destination':
                 return mapDestinationToProxy(route, options);
-            case "application":
+            case 'application':
                 return mapApplicationToProxy(route, options);
             default:
                 return null;
@@ -18,7 +20,7 @@ module.exports = function (grunt) {
 
     function mapRouteToPath(route, options) {
         switch (route.target.type) {
-            case "application":
+            case 'application':
                 return mapApplicationToPath(route, options);
             default:
                 return null;
@@ -27,15 +29,15 @@ module.exports = function (grunt) {
 
     function mapServiceToProxy(route, options) {
         switch (route.target.name) {
-            case "sapui5":
+            case 'sapui5':
                 let proxy = {
                     context: route.path,
-                    host: "sapui5.hana.ondemand.com",
+                    host: 'sapui5.hana.ondemand.com',
                     https: true,
                     rewrite: {}
                 };
 
-                proxy.rewrite[route.path] = (options.sapUi5 ? "/" + options.sapUi5 : "") + route.target.entryPath;
+                proxy.rewrite[route.path] = (options.sapUi5 ? '/' + options.sapUi5 : "") + route.target.entryPath;
 
                 return proxy;
             default:
@@ -44,12 +46,12 @@ module.exports = function (grunt) {
     }
 
     function mapDestinationToProxy(route, options) {
-        let host = process.env["DEST_" + route.target.name + "_HOST"],
-            user = process.env["DEST_" + route.target.name + "_USER"],
-            password = process.env["DEST_" + route.target.name + "_PASSWORD"];
+        let host = process.env['DEST_' + route.target.name + '_HOST'],
+            user = process.env['DEST_' + route.target.name + '_USER'],
+            password = process.env['DEST_' + route.target.name + '_PASSWORD'];
 
         if (!host) {
-            grunt.log.error("No host specified for destination '" + route.target.name + "'. Skipping");
+            grunt.log.error('No host specified for destination "' + route.target.name + '". Skipping');
             return null;
         }
 
@@ -64,25 +66,25 @@ module.exports = function (grunt) {
         proxy.rewrite[route.path] = route.target.entryPath ? route.target.entryPath : "";
 
         if (user && password) {
-            proxy.headers.Authorization = "Basic " + Buffer.from(user + ":" + password).toString("base64");
+            proxy.headers.Authorization = 'Basic ' + Buffer.from(user + ':' + password).toString('base64');
         }
 
         return proxy;
     }
 
     function mapApplicationToProxy(route, options) {
-        let path = process.env["DEST_" + route.target.name + "_PATH"];
+        let path = process.env['DEST_' + route.target.name + '_PATH'];
 
         if (!path) {
-            grunt.log.error("No path specified for application '" + route.target.name + "'. Skipping");
+            grunt.log.error('No path specified for application "' + route.target.name + '". Skipping');
             return null;
         }
 
         let proxy = {
             context: route.path,
-            host: "localhost",
+            host: 'localhost',
             port: options.port,
-            https: false,
+            https: true,
             headers: {},
             rewrite: {}
         };
@@ -93,25 +95,50 @@ module.exports = function (grunt) {
     }
 
     function mapApplicationToPath(route, options) {
-        let path = process.env["DEST_" + route.target.name + "_PATH"];
+        let path = process.env['DEST_' + route.target.name + '_PATH'];
 
         if (!path) {
-            grunt.log.error("No path specified for application '" + route.target.name + "'. Skipping");
+            grunt.log.error('No path specified for application "' + route.target.name + '". Skipping');
             return null;
         }
 
         return path;
     }
 
-    grunt.loadNpmTasks("grunt-connect-proxy-updated");
-    grunt.loadNpmTasks("grunt-contrib-connect");
+    function replaceCookie(value) {
+        let result = value.replace(/Domain=.*;/g, '')
+            .replace(/Secure;/g, '');
+        grunt.verbose.writeln('Rewrote cookie. Was: ' + value + ". Now: " + result);
+        return result;
+    }
 
-    grunt.registerTask("localneo", "Local NEO runtime", function () {
+    function rewriteSetCookie(req, res, next) {
+        let oldSetHeader = res.setHeader;
+        res.setHeader = function (key, value) {
+            if (key.toLowerCase() === "set-cookie") {
+                if (Array.isArray(value)) {
+                    value = value.map(replaceCookie);
+                } else {
+                    value = replaceCookie(value);
+                }
+            }
+            oldSetHeader.call(this, key, value);
+        };
+        next();
+    }
+
+    const proxyRequest = require('grunt-connect-proxy-updated/lib/utils').proxyRequest;
+
+    grunt.loadNpmTasks('grunt-connect-proxy-updated');
+    grunt.loadNpmTasks('grunt-contrib-connect');
+
+    grunt.registerTask('localneo', 'Local NEO runtime', function () {
 
         let options = this.options({
             port: 62493,
             open: false,
-            basePath: "./webapp",
+            baseDir: '.',
+            basePath: './webapp',
             index: "",
             sapUi5: "",
             secure: false,
@@ -119,68 +146,58 @@ module.exports = function (grunt) {
             localResources: []
         });
 
-        grunt.verbose.writeln("Running on port: " + options.port);
-        grunt.verbose.writeln("Serving from '" + options.basePath + "'")
+        let serverContentsRoot = path.join(options.baseDir, options.basePath);
+
+        grunt.verbose.writeln('Running on port: ' + options.port);
+        grunt.verbose.writeln('Serving from "' + serverContentsRoot + '"');
         if (options.open) {
-            grunt.verbose.writeln("Index file '" + options.index + "' will be opened");
+            grunt.verbose.writeln('Index file "' + options.index + '" will be opened');
         }
         if (options.sapUi5) {
-            grunt.verbose.writeln("SAPUI5 version: " + options.sapUi5);
+            grunt.verbose.writeln('SAPUI5 version: ' + options.sapUi5);
         } else {
-            grunt.log.writeln("SAPUI5 version not specified. Latest will be used");
+            grunt.log.writeln('SAPUI5 version not specified. Latest will be used');
         }
 
         let proxies = options.proxies.slice();
         let localResources = options.localResources.slice();
-        let neoapp = grunt.file.readJSON("neo-app.json");
-
-        if (Array.isArray(neoapp.routes)) {
-            proxies = proxies.concat(neoapp.routes.map(route => mapRouteToProxy(route, options)).filter(route => !!route));
-
-            localResources = localResources.concat(neoapp.routes.map(route => mapRouteToPath(route, options)).filter(route => !!route));
+        let neoApp;
+        let neoAppPath = path.join(options.baseDir, '/', 'neo-app.json');
+        if (grunt.file.exists(neoAppPath)) {
+            neoApp = grunt.file.readJSON(neoAppPath);
+            grunt.verbose.writeln('neo-app.json contents\n' + JSON.stringify(neoApp, null, 2))
+        } else {
+            grunt.log.writeln('neo-app.json not found at' + neoAppPath);
+            neoApp = {
+                routes: []
+            }
         }
 
-        function rewriteSetCookie(req, res, next) {
-            let oldWriteHead = res.writeHead;
-            res.writeHead = function () {
-                let cookie = res.getHeader("Set-Cookie");
-                if (cookie) {
-                    res.setHeader("Set-Cookie", cookie.map(function (item) {
-                        let result = item.replace(/Domain=.*;/g, "");
+        if (Array.isArray(neoApp.routes)) {
+            proxies = proxies.concat(neoApp.routes.map(route => mapRouteToProxy(route, options)).filter(route => !!route));
 
-                        if (!options.secure) {
-                            result = result.replace(/Secure;/g, "")
-                        }
-
-                        grunt.verbose.writeln("Rewrote cookies. Was: " + item + ". Now: " + result);
-
-                        return result;
-                    }));
-                }
-                oldWriteHead.apply(res, arguments);
-            };
-            next();
+            localResources = localResources.concat(neoApp.routes.map(route => mapRouteToPath(route, options)).filter(route => !!route));
         }
 
-        grunt.config("connect", {
+        grunt.config('connect', {
             server: {
                 options: {
                     port: options.port,
-                    hostname: "localhost",
-                    protocol: options.secure ? "https" : "http",
+                    hostname: 'localhost',
+                    protocol: options.secure ? 'https' : 'http',
                     keepalive: true,
                     open: options.open,
                     base: [{
-                        path: options.basePath,
+                        path: serverContentsRoot,
                         options: {
                             index: options.index
                         }
                     }].concat(localResources),
-                    directory: options.basePath,
+                    directory: serverContentsRoot,
                     middleware: function (connect, options, middleware) {
                         return [
                             rewriteSetCookie,
-                            require("grunt-connect-proxy-updated/lib/utils").proxyRequest
+                            proxyRequest
                         ].concat(middleware);
                     }
                 },
@@ -188,7 +205,7 @@ module.exports = function (grunt) {
             }
         });
 
-        grunt.task.run(["configureProxies:server", "connect:server"]);
+        grunt.task.run(['configureProxies:server', 'connect:server']);
 
     });
 

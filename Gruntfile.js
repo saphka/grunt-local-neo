@@ -4,7 +4,8 @@ module.exports = function (grunt) {
     grunt.initConfig({
         localneo: {
             options: {
-                basePath: '.'
+                basePath: './webapp',
+                baseDir: './test'
             }
         }
     });
