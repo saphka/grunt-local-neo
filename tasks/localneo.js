@@ -62,6 +62,7 @@ module.exports = function (grunt) {
             context: route.path,
             host: host,
             https: true,
+            xforward: true,
             headers: {},
             rewrite: {}
         };
