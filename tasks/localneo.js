@@ -63,6 +63,7 @@ module.exports = function (grunt) {
             host: host,
             https: true,
             xforward: true,
+            secure: true,
             headers: {},
             rewrite: {}
         };
@@ -96,6 +97,7 @@ module.exports = function (grunt) {
             host: host ? host : 'localhost',
             port: host ? undefined : options.port,
             https: host ? true : options.secure,
+            secure: !!host,
             headers: {},
             rewrite: {}
         };
@@ -128,9 +130,9 @@ module.exports = function (grunt) {
 
     function replaceCookie(value) {
         let result = value
-            .replace(/ domain=.*;/ig, '')
-            .replace(/ secure;/ig, '')
-            .replace(/ path=.*;/ig, '');
+            .replace(/ domain=.*;/ig, '');
+        // .replace(/ secure;/ig, '')
+        // .replace(/ path=.*;/ig, '');
         grunt.verbose.writeln('Rewrote cookie. Was: ' + value + ". Now: " + result);
         return result;
     }
@@ -210,7 +212,7 @@ module.exports = function (grunt) {
             basePath: './webapp',
             index: "",
             sapUi5: "",
-            secure: false,
+            secure: true,
             component: '',
             proxies: [],
             localResources: []
