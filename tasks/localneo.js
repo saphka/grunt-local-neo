@@ -76,17 +76,24 @@ module.exports = function (grunt) {
     }
 
     function mapApplicationToProxy(route, options) {
-        let path = process.env['DEST_' + route.target.name + '_PATH'];
+        let host = process.env['LIB_' + route.target.name + 'HOST'],
+            path = process.env['LIB_' + route.target.name + '_PATH'],
+            user = process.env['LIB_' + route.target.name + '_USER'],
+            password = process.env['LIB_' + route.target.name + '_PASSWORD'];
+
+        if (host && !path) {
+            path = '/';
+        }
 
         if (!path) {
-            grunt.log.error('No path specified for application "' + route.target.name + '". Skipping');
+            grunt.log.error('No path or host specified for application "' + route.target.name + '". Skipping');
             return null;
         }
 
         let proxy = {
             context: route.path,
-            host: 'localhost',
-            port: options.port,
+            host: host ? host : 'localhost',
+            port: host ? undefined : options.port,
             https: true,
             headers: {},
             rewrite: {}
@@ -94,11 +101,21 @@ module.exports = function (grunt) {
 
         proxy.rewrite[route.path] = route.target.entryPath ? route.target.entryPath : "";
 
+        if (user && password) {
+            proxy.headers.Authorization = 'Basic ' + Buffer.from(user + ':' + password).toString('base64');
+        }
+
         return proxy;
     }
 
     function mapApplicationToPath(route, options) {
-        let path = process.env['DEST_' + route.target.name + '_PATH'];
+        let host = process.env['LIB_' + route.target.name + 'HOST'];
+        let path = process.env['LIB_' + route.target.name + '_PATH'];
+
+        if (host) {
+            //skip for remote
+            return null;
+        }
 
         if (!path) {
             grunt.log.error('No path specified for application "' + route.target.name + '". Skipping');

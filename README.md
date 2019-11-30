@@ -94,8 +94,32 @@ Default value: `[]`
 
 Manual additional resource to server via server. See [grunt-contrib-connect](https://www.npmjs.com/package/grunt-contrib-connect#base) option `base` for detailed configuration options
 
+###neo-app.json
+This file is used by SAP Cloud Platform to configure destinations for an application.
+Local runtime also uses this file with the help of the environment variables (see next chapter)
+Please configure your destinations and application resources specified in `neo-app.json` file vie environment variables.
+Example part of `neo-app.json`
+```json
+    {
+      "path": "/<proxied path>",
+      "target": {
+        "type": "destination",
+        "name": "<SCP Destination Name>",
+        "entryPath": "/"
+      },
+      "description": ""
+    },
+    {
+      "path": "/<proxied path>",
+      "target": {
+        "type": "application",
+        "name": "<Library appliation name>"
+      }
+    }
+```  
+
 ### Environment variables
-Task uses environment variables for destinations configuration.
+Task uses environment variables for destinations and application configuration.
 See [dotenv](https://www.npmjs.com/package/dotenv) plugin for details.
 
 To configure a destination, create `.env` file in root folder.
@@ -103,10 +127,27 @@ Add this line:
 ```text
 DEST_<Destination name>_HOST=<Destination host w/o protocol>
 ``` 
-If your destination requires authentication, add the followilng lines (only basic is supported):
+If your destination requires authentication, add the following lines (only basic is supported):
 ```text
 DEST_<Destination name>_USER=<User>
 DEST_<Destination name>_PASSWORD=<Password>
+```
+
+If your application uses other application's files or some custom library connect it with
+#### Local computer hosted
+```text
+LIB_<Application name>_PATH=<path on your computer>
+``` 
+
+#### Remote hosted
+```text
+LIB_<Application name>_HOST=<Application host w/o protocol>
+LIB_<Application name>_PATH=<Remote host path. Defaults to root>
+```
+If remote host requires authentication, add the following lines (only basic is supported):
+```text
+LIB_<Destination name>_USER=<User>
+LIB_<Destination name>_PASSWORD=<Password>
 ```
 
 ### Usage Examples
@@ -124,13 +165,11 @@ Will run on https://localhost:62493 and serve from `./webapp' directory
 
 #### Specific port and auto-open
 ```js
-grunt.initConfig({
-    localneo: {
-        options: {
-            port: 12345,
-            open: true,
-            index: "test.html"
-        }
+grunt.config("localneo", {
+    options: {
+        port: 12345,
+        open: true,
+        index: "test.html"
     }
 }); 
 ```
