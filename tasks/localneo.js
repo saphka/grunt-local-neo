@@ -76,7 +76,7 @@ module.exports = function (grunt) {
     }
 
     function mapApplicationToProxy(route, options) {
-        let host = process.env['LIB_' + route.target.name + 'HOST'],
+        let host = process.env['LIB_' + route.target.name + '_HOST'],
             path = process.env['LIB_' + route.target.name + '_PATH'],
             user = process.env['LIB_' + route.target.name + '_USER'],
             password = process.env['LIB_' + route.target.name + '_PASSWORD'];
