@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Application</title>
+
+		<script>
+			window["sap-ushell-config"] = {
+				defaultRenderer : "fiori2",
+				renderers: {
+					fiori2: {
+						componentData: {
+							config: {
+								search: "hidden"
+							}
+						}
+					}
+				},
+				applications: {
+					"Application-display": {
+						additionalInformation: "SAPUI5.Component={{sap-ui5-component}}",
+						applicationType: "URL",
+						url: "./",
+						description: "Sandbox",
+						title: "Application"
+					}
+				}
+			};
+		</script>
+
+		<script src="./test-resources/sap/ushell/bootstrap/sandbox.js" id="sap-ushell-bootstrap"></script>
+		<script id="sap-ui-bootstrap"
+				src="./resources/sap-ui-core.js"
+				data-sap-ui-libs="sap.ushell, sap.collaboration, sap.m, sap.ui.layout"
+				data-sap-ui-theme="sap_belize"
+				data-sap-ui-compatVersion="edge"
+				data-sap-ui-preload="async"
+				data-sap-ui-frameOptions='allow'>
+		</script>
+
+		<script>
+			sap.ui.getCore().attachInit(function() {
+				sap.ushell.Container.createRenderer().placeAt("content");
+			});
+		</script>
+
+	</head>
+
+	<body class="sapUiBody" id="content">
+	</body>
+</html>

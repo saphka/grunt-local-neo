@@ -49,6 +49,12 @@ Default value: `false`
 
 Open index file after server start
 
+#### options.baseDir
+Type: `String`
+Default value: `'.'`
+
+Base directory to work and server files from
+
 #### options.basePath
 Type: `String`
 Default value: `"./webapp"`
@@ -66,6 +72,30 @@ Type: `String`
 Default value: `""`
 
 SAPUI5 version. If none specified, latest will be used
+
+#### options.secure
+Type: `Boolean`
+Default value: `false`
+
+Use http of https for local server
+
+#### options.component
+Type: `String`
+Default value: `''`
+
+SAPUI5 Component ID for sandbox
+
+#### options.proxies
+Type: `Array`
+Default value: `[]`
+
+Manual proxy configurations. See [grunt-connect-proxy-updated](https://www.npmjs.com/package/grunt-connect-proxy-updated) for detailed proxy configuration options
+
+#### options.localResources
+Type: `Array`
+Default value: `[]`
+
+Manual additional resource to server via server. See [grunt-contrib-connect](https://www.npmjs.com/package/grunt-contrib-connect#base) option `base` for detailed configuration options
 
 ### Environment variables
 Task uses environment variables for destinations configuration.

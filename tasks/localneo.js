@@ -4,6 +4,9 @@ module.exports = function (grunt) {
     require('dotenv').config();
 
     const path = require('path');
+    const serverIndex = require('serve-index');
+    const parseUrl = require('parseurl');
+    const fs = require('fs');
 
     function mapRouteToProxy(route, options) {
         switch (route.target.type) {
@@ -127,6 +130,52 @@ module.exports = function (grunt) {
         next();
     }
 
+    function serveSandbox(componentId) {
+        return function (req, res, next) {
+            let url = parseUrl(req);
+
+            if (url.pathname === '/sandbox.html') {
+                let fileName = path.join(__dirname, '../public', 'sandbox.html');
+
+                let render = createHtmlRender(fileName);
+
+                let locals = {
+                    component: componentId
+                };
+
+                render(locals, function (err, body) {
+                    if (err) return next(err);
+
+                    res.setHeader('X-Content-Type-Options', 'nosniff')
+
+                    // standard headers
+                    res.setHeader('Content-Type', 'text/html; charset=utf-8')
+                    res.setHeader('Content-Length', Buffer.byteLength(body, 'utf8'))
+
+                    // body
+                    res.end(body, 'utf8')
+                });
+            } else {
+                next();
+            }
+
+        }
+    }
+
+    function createHtmlRender(template) {
+        return function render(locals, callback) {
+            // read template
+            fs.readFile(template, 'utf8', function (err, str) {
+                if (err) return callback(err);
+
+                let body = str
+                    .replace(/\{\{sap-ui5-component\}\}/g, locals.component);
+
+                callback(null, body);
+            });
+        };
+    }
+
     const proxyRequest = require('grunt-connect-proxy-updated/lib/utils').proxyRequest;
 
     grunt.loadNpmTasks('grunt-connect-proxy-updated');
@@ -142,6 +191,7 @@ module.exports = function (grunt) {
             index: "",
             sapUi5: "",
             secure: false,
+            component: '',
             proxies: [],
             localResources: []
         });
@@ -198,7 +248,14 @@ module.exports = function (grunt) {
                         return [
                             rewriteSetCookie,
                             proxyRequest
-                        ].concat(middleware);
+                        ].concat(middleware.slice(0, -1))
+                            .concat([
+                                serverIndex(serverContentsRoot, {
+                                    template: path.join(__dirname, '../public', 'directory.html')
+                                }),
+                                serveSandbox(options.component)
+                            ])
+
                     }
                 },
                 proxies: proxies
