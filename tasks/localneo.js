@@ -126,8 +126,10 @@ module.exports = function (grunt) {
     }
 
     function replaceCookie(value) {
-        let result = value.replace(/Domain=.*;/g, '')
-            .replace(/Secure;/g, '');
+        let result = value
+            .replace(/ domain=.*;/ig, '')
+            .replace(/ secure;/ig, '')
+            .replace(/ path=.*;/ig, '');
         grunt.verbose.writeln('Rewrote cookie. Was: ' + value + ". Now: " + result);
         return result;
     }
