@@ -94,7 +94,7 @@ module.exports = function (grunt) {
             context: route.path,
             host: host ? host : 'localhost',
             port: host ? undefined : options.port,
-            https: true,
+            https: host ? true : options.secure,
             headers: {},
             rewrite: {}
         };
