@@ -7,6 +7,8 @@ module.exports = function (grunt) {
     const serverIndex = require('serve-index');
     const parseUrl = require('parseurl');
     const fs = require('fs');
+    const proxyRequest = require('grunt-connect-proxy-updated/lib/utils').proxyRequest;
+    const matchContext = require('grunt-connect-proxy-updated/lib/utils').matchContext;
 
     function mapRouteToProxy(route, options) {
         switch (route.target.type) {
@@ -140,19 +142,46 @@ module.exports = function (grunt) {
         return result;
     }
 
-    function rewriteSetCookie(req, res, next) {
-        let oldSetHeader = res.setHeader;
-        res.setHeader = function (key, value) {
-            if (key.toLowerCase() === "set-cookie") {
-                if (Array.isArray(value)) {
-                    value = value.map(replaceCookie);
-                } else {
-                    value = replaceCookie(value);
-                }
-            }
-            oldSetHeader.call(this, key, value);
+    function convertCookieToPair(value) {
+        let name = value.replace(/^(.+)=.+/g, '$1');
+        return {
+            key: name,
+            value: value
         };
-        next();
+    }
+
+    function getCookieModifier(proxies) {
+        return function (req, res, next) {
+            let proxy = proxies.find(proxy => matchContext(proxy.context, req.url));
+            if (proxy) {
+                if (!proxy.headers) {
+                    proxy.headers = {};
+                }
+
+                let oldSetHeader = res.setHeader;
+                res.setHeader = function (key, value) {
+                    if (key.toLowerCase() === "set-cookie") {
+                        if (!Array.isArray(value)) {
+                            value = [value];
+                        }
+
+                        let oldCookieMap = (proxy.headers.cookie || []).map(convertCookieToPair).reduce((acc, pair) => {
+                            acc[pair.key] = pair.value;
+                            return acc;
+                        }, {});
+
+                        value.map(convertCookieToPair).map(pair => {
+                            oldCookieMap[pair.key] = pair.value
+                        });
+
+                        proxy.headers.cookie = Object.values(oldCookieMap);
+                    } else {
+                        oldSetHeader.call(this, key, value);
+                    }
+                };
+            }
+            next();
+        }
     }
 
     function serveSandbox(componentId) {
@@ -200,8 +229,6 @@ module.exports = function (grunt) {
             });
         };
     }
-
-    const proxyRequest = require('grunt-connect-proxy-updated/lib/utils').proxyRequest;
 
     grunt.loadNpmTasks('grunt-connect-proxy-updated');
     grunt.loadNpmTasks('grunt-contrib-connect');
@@ -273,7 +300,7 @@ module.exports = function (grunt) {
                     directory: serverContentsRoot,
                     middleware: function (connect, options, middleware) {
                         return [
-                            rewriteSetCookie,
+                            getCookieModifier(proxies),
                             proxyRequest
                         ].concat(middleware.slice(0, -1))
                             .concat([
