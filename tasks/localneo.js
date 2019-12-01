@@ -143,7 +143,7 @@ module.exports = function (grunt) {
     }
 
     function convertCookieToPair(value) {
-        let name = value.replace(/^(.+)=.+/g, '$1');
+        let name = value.replace(/^([\w.-_]+)=.+/g, '$1');
         return {
             key: name,
             value: value
@@ -153,9 +153,9 @@ module.exports = function (grunt) {
     function getCookieModifier(proxies) {
         return function (req, res, next) {
             let proxy = proxies.find(proxy => matchContext(proxy.context, req.url));
-            if (proxy) {
-                if (!proxy.headers) {
-                    proxy.headers = {};
+            if (proxy && proxy.headers) {
+                if (proxy.headers.cookie) {
+                    req.headers.cookie = proxy.headers.cookie.join('; ');
                 }
 
                 let oldSetHeader = res.setHeader;
